@@ -31,7 +31,7 @@ public class JWTServiceTest {
     @Test
     public void testExtractEmailAndRole() {
         String email = "user@example.com";
-        String token = jwtService.generateToken(email, Role.INSTRUCTOR);
+        String token = jwtService.generateToken(email, Role.LECTURER);
         Claims claims = jwtService.extractAllClaims(token);
 
         assertEquals(email, claims.getSubject());

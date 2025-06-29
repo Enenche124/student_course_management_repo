@@ -10,5 +10,5 @@ public class LoginResponse {
     private String message;
     private boolean success;
     private String token;
-//    private Student student;
+    private String role;
 }

@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +48,7 @@ public class JWTService {
         return extractAllClaims(token).getSubject();
     }
 
+
     public String extractRole(String token) {
         String role = extractAllClaims(token).get("role", String.class);
         return role.replace("ROLE_", "");
@@ -58,10 +60,12 @@ public class JWTService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+
     }
 
     public Key getSigningKey() {
         byte[] keyBytes = secret.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
 }

@@ -1,7 +1,9 @@
 package com.learning.controllers;
 
 import com.learning.data.models.Course;
+import com.learning.data.models.Student;
 import com.learning.dtos.EnrolledCourseWithGrade;
+import com.learning.dtos.studentsSumary.StudentPerformanceDto;
 import com.learning.services.StudentService;
 import jakarta.validation.constraints.NotBlank;
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +22,7 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+
     private static final Logger logger = LogManager.getLogger(StudentController.class);
     @Autowired
     public StudentController(StudentService studentService) {
@@ -65,4 +68,19 @@ public class StudentController {
             throw new RuntimeException("Enrollment failed: " + e.getMessage());
         }
     }
+
+    @GetMapping("/performance")
+    public ResponseEntity<List<StudentPerformanceDto>> getPerformance() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(studentService.getStudentPerformance(email));
+    }
+
+    @GetMapping("/{email:.+}")
+    public ResponseEntity<Student> getStudentByEmail(@PathVariable String email) {
+        return studentService.findStudentByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
 }

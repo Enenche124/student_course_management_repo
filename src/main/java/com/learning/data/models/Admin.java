@@ -1,23 +1,22 @@
 package com.learning.data.models;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-
+@Document(collection = "admins")
 @Data
-@Document(collection = "instructors")
-public class Instructor {
+public class Admin {
     @Id
     private String id;
 
     @NotBlank
     private String name;
 
-    private String password; // Stores BCrypt-hashed password
+    private String password;
 
     private Role role;
 

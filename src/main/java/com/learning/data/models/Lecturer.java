@@ -7,12 +7,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
-@Document(collection = "students")
-public class Student {
+@Document(collection = "instructors")
+public class Lecturer {
     @Id
     private String id;
 
@@ -27,6 +25,4 @@ public class Student {
     @Email
     @Indexed(unique = true, collation = "{ locale: 'en', strength: 2 }")
     private String email;
-
-    private List<Course> enrolledCourses = new ArrayList<>();
 }

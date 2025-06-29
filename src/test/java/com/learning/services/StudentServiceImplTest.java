@@ -3,6 +3,7 @@ package com.learning.services;
 import com.learning.data.models.Course;
 import com.learning.data.models.Role;
 import com.learning.data.models.Student;
+import com.learning.data.repositories.AdminRepository;
 import com.learning.data.repositories.CourseRepository;
 import com.learning.data.repositories.StudentRepository;
 import com.learning.dtos.EnrolledCourseWithGrade;
@@ -31,10 +32,13 @@ public class StudentServiceImplTest {
     private StudentRepository studentRepository;
 
     @Autowired
+    private AdminServiceImpl adminService;
+
+    @Autowired
     private CourseRepository courseRepository;
 
     @Autowired
-    private InstructorServiceImpl instructorService;
+    private LecturerServiceImpl instructorService;
 
     @BeforeEach
     public void setUp() {
@@ -59,7 +63,7 @@ public class StudentServiceImplTest {
 
         RegisterRequest instructorRegisterRequest = new RegisterRequest();
         instructorRegisterRequest.setName("Chibuzor Ekeoma");
-        instructorRegisterRequest.setRole(Role.INSTRUCTOR);
+        instructorRegisterRequest.setRole(Role.LECTURER);
         instructorRegisterRequest.setPassword("Chibuzor@123");
         instructorRegisterRequest.setEmail("chibuzor@gmail.com");
         authenticationService.register(instructorRegisterRequest);
@@ -73,7 +77,7 @@ public class StudentServiceImplTest {
         course.setCourseCode("Math111");
         course.setCourseTitle("Computer Science");
         course.setCourseDescription("Become a scientist in one month");
-        Course createdCourse = instructorService.createCourse(course, instructorRegisterRequest.getEmail());
+        Course createdCourse = adminService.createCourse("Chem107", "chemistry", "learn chemistry");
         assertNotNull(createdCourse);
 
         studentService.enrollForCourse(studentRegisterRequest.getEmail(), createdCourse.getCourseCode());
@@ -81,7 +85,7 @@ public class StudentServiceImplTest {
         Student enrolledStudent = studentRepository.findStudentByEmail(studentRegisterRequest.getEmail()).orElse(null);
         assertNotNull(enrolledStudent);
         assertFalse(enrolledStudent.getEnrolledCourses().isEmpty());
-        assertEquals("Math111", enrolledStudent.getEnrolledCourses().get(0).getCourseCode());
+        assertEquals("Chem107", enrolledStudent.getEnrolledCourses().get(0).getCourseCode());
     }
 
     @Test
@@ -121,7 +125,7 @@ public class StudentServiceImplTest {
 
         RegisterRequest instructorRegisterRequest = new RegisterRequest();
         instructorRegisterRequest.setName("Chibuzor Ekeoma");
-        instructorRegisterRequest.setRole(Role.INSTRUCTOR);
+        instructorRegisterRequest.setRole(Role.LECTURER);
         instructorRegisterRequest.setPassword("Chibuzor@123");
         instructorRegisterRequest.setEmail("chibuzor@gmail.com");
         authenticationService.register(instructorRegisterRequest);
@@ -142,16 +146,15 @@ public class StudentServiceImplTest {
         courseTwo.setCourseTitle("Chemistry 122");
         courseTwo.setCourseDescription("Basic Chemistry");
 
-        Course createdCourseTwo = instructorService.createCourse(courseTwo, instructorRegisterRequest.getEmail());
-        Course createdCourse = instructorService.createCourse(course, instructorRegisterRequest.getEmail());
+        Course createdCourseTwo = adminService.createCourse("Chem101", "chemistry", "learn chemistry");
+        Course createdCourse = adminService.createCourse("Chem102", "chemistry", "learn chemistry");
         assertNotNull(createdCourse);
-        assertEquals("MTH101", createdCourse.getCourseCode());
 
         studentService.enrollForCourse(studentRegisterRequest.getEmail(), createdCourse.getCourseCode());
         List<EnrolledCourseWithGrade> coursesEnrolled = studentService.viewEnrolledCourses(studentLoginRequest.getEmail());
         assertNotNull(coursesEnrolled);
         assertEquals(1, coursesEnrolled.size());
-        assertEquals("MTH101", coursesEnrolled.get(0).getCourseCode());
+        assertEquals("Chem102", coursesEnrolled.get(0).getCourseCode());
     }
 
     @Test
@@ -165,7 +168,7 @@ public class StudentServiceImplTest {
 
         RegisterRequest instructorRegisterRequest = new RegisterRequest();
         instructorRegisterRequest.setName("Chibuzor Ekeoma");
-        instructorRegisterRequest.setRole(Role.INSTRUCTOR);
+        instructorRegisterRequest.setRole(Role.LECTURER);
         instructorRegisterRequest.setPassword("Chibuzor@123");
         instructorRegisterRequest.setEmail("chibuzor@gmail.com");
         authenticationService.register(instructorRegisterRequest);
@@ -174,7 +177,7 @@ public class StudentServiceImplTest {
         course.setCourseCode("Math111");
         course.setCourseTitle("Computer Science");
         course.setCourseDescription("Become a scientist in one month");
-        Course createdCourse = instructorService.createCourse(course, instructorRegisterRequest.getEmail());
+        Course createdCourse = adminService.createCourse("Chem106", "chemistry", "learn chemistry");
 
         studentService.enrollForCourse(studentRegisterRequest.getEmail(), createdCourse.getCourseCode());
         assertThrows(IllegalStateException.class, () ->
@@ -212,7 +215,7 @@ public class StudentServiceImplTest {
 
         RegisterRequest instructorRegisterRequest = new RegisterRequest();
         instructorRegisterRequest.setName("Chibuzor Ekeoma");
-        instructorRegisterRequest.setRole(Role.INSTRUCTOR);
+        instructorRegisterRequest.setRole(Role.LECTURER);
         instructorRegisterRequest.setPassword("Chibuzor@123");
         instructorRegisterRequest.setEmail("chibuzor@gmail.com");
         authenticationService.register(instructorRegisterRequest);
@@ -221,7 +224,7 @@ public class StudentServiceImplTest {
         course.setCourseCode("Math111");
         course.setCourseTitle("Computer Science");
         course.setCourseDescription("Become a scientist in one month");
-        Course createdCourse = instructorService.createCourse(course, instructorRegisterRequest.getEmail());
+        Course createdCourse = adminService.createCourse("Chem105", "chemistry", "learn chemistry");
 
         studentService.enrollForCourse("peter@gmail.com", createdCourse.getCourseCode());
         Student enrolledStudent = studentRepository.findStudentByEmail("peter@gmail.com").orElse(null);

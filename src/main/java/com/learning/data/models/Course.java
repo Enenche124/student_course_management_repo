@@ -20,7 +20,7 @@ public class Course {
 
     private String courseDescription;
 
-    @NotBlank
+//    @NotBlank
     private String courseInstructorEmail;
 
     // No grades map needed

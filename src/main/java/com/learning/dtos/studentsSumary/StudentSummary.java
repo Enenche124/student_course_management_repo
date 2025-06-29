@@ -7,5 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class StudentSummary {
     private String name;
-//    private String matricNumber;
+    private String studentEmail;
 }
+

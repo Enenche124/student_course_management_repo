@@ -34,6 +34,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             return ResponseEntity.ok(authenticationService.login(loginRequest));
+
         } catch (Exception e) {
             throw new RuntimeException("Login failed: " + e.getMessage());
         }

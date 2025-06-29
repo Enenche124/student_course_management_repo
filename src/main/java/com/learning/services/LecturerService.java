@@ -5,10 +5,9 @@ import com.learning.dtos.studentsSumary.StudentSummary;
 
 import java.util.List;
 
-public interface InstructorService {
+public interface LecturerService {
     long count();
-    Course createCourse(Course course, String instructorEmail);
-    void assignGradeToStudent(String studentEmail, String courseCode, String grade);
+    void assignGradeToStudent(String studentEmail, String courseCode, double score);
     List<StudentSummary> viewAllEnrolledStudents(String instructorEmail);
     List<Course> viewAllCourses(String instructorEmail);
 }

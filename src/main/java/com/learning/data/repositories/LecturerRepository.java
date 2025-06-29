@@ -1,13 +1,13 @@
 package com.learning.data.repositories;
 
-import com.learning.data.models.Instructor;
+import com.learning.data.models.Lecturer;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface InstructorRepository extends MongoRepository<Instructor, String> {
-    Optional<Instructor> findByEmail(String email);
+public interface LecturerRepository extends MongoRepository<Lecturer, String> {
+    Optional<Lecturer> findByEmail(String email);
     void deleteByEmail(String email);
 }

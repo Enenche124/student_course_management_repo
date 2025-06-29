@@ -1,7 +1,7 @@
 package com.learning.services;
 
 import com.learning.data.models.Role;
-import com.learning.data.repositories.InstructorRepository;
+import com.learning.data.repositories.LecturerRepository;
 import com.learning.data.repositories.StudentRepository;
 import com.learning.dtos.requests.LoginRequest;
 import com.learning.dtos.requests.RegisterRequest;
@@ -24,12 +24,12 @@ public class AuthenticationServiceImplTest {
     private StudentRepository studentRepository;
 
     @Autowired
-    private InstructorRepository instructorRepository;
+    private LecturerRepository lecturerRepository;
 
     @BeforeEach
     void setUp() {
         studentRepository.deleteAll();
-        instructorRepository.deleteAll();
+        lecturerRepository.deleteAll();
     }
 
     @Test
@@ -51,7 +51,7 @@ public class AuthenticationServiceImplTest {
         request.setEmail("instructor@example.com");
         request.setPassword("Password@1236");
         request.setName("Prof. Smith");
-        request.setRole(Role.INSTRUCTOR);
+        request.setRole(Role.LECTURER);
 
         RegisterResponse response = authenticationService.register(request);
         assertTrue(response.isSuccess());
@@ -111,7 +111,7 @@ public class AuthenticationServiceImplTest {
         registerRequest.setEmail("instructor1@example.com");
         registerRequest.setPassword("Techpass@11");
         registerRequest.setName("Instructor Jerry");
-        registerRequest.setRole(Role.INSTRUCTOR);
+        registerRequest.setRole(Role.LECTURER);
         RegisterResponse registerResponse = authenticationService.register(registerRequest);
         assertNotNull(registerResponse);
 
@@ -141,18 +141,6 @@ public class AuthenticationServiceImplTest {
         assertEquals("Invalid credentials", response.getMessage());
     }
 
-//    @Test
-//    public void testRegisterInvalidPasswordFormatFails() {
-//        RegisterRequest request = new RegisterRequest();
-//        request.setEmail("student@example.com");
-//        request.setPassword("");
-//        request.setName("John Doe");
-//        request.setRole(Role.STUDENT);
-//
-//        RegisterResponse response = authenticationService.register(request);
-//        assertFalse(response.isSuccess());
-//        assertEquals("Invalid email format", response.getMessage());
-//    }
 
     @Test
     public void testCaseInsensitiveEmailRegistrationFails() {
