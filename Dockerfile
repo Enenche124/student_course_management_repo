@@ -1,14 +1,12 @@
-# Start from a lightweight Java 21 base image
-FROM eclipse-temurin:21-jdk-alpine
-
-# Set the working directory
+# 1. Use Maven to build the app
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copy your built Spring Boot JAR into the container
-COPY target/student-course-management-1.0-SNAPSHOT.jar app.jar
-
-# Expose the application port (should match server.port in your properties)
+# 2. Run the jar with a lighter image
+FROM eclipse-temurin:21-jdk
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 9090
-
-# Start the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
