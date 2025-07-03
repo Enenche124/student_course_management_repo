@@ -3,7 +3,7 @@ package com.learning.services;
 import com.learning.data.models.Course;
 import com.learning.data.models.Role;
 import com.learning.data.repositories.CourseRepository;
-import com.learning.data.repositories.LecturerRepository;
+import com.learning.data.repositories.UserRepository;
 import com.learning.dtos.requests.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,8 +19,10 @@ public class AdminServiceImplTest {
 
     @Autowired
     private CourseRepository courseRepository;
+
     @Autowired
-    private LecturerRepository lecturerRepository;
+    private UserRepository userRepository;
+
 
     @Autowired
     private AdminServiceImpl adminServiceImpl;
@@ -29,7 +31,7 @@ public class AdminServiceImplTest {
 
     @BeforeEach
     public void setUp() {
-        lecturerRepository.deleteAll();
+        userRepository.deleteAll();
     }
     @Test
     public void testAdminCanViewAllLecturers() {
@@ -76,7 +78,7 @@ public class AdminServiceImplTest {
         adminServiceImpl.assignCourseToLecturer(courseCode, lecturerRequest.getEmail());
 
         Course course = courseRepository.findByCourseCode(courseCode).orElseThrow();
-        assertEquals("banner@univ.edu", course.getCourseInstructorEmail());
+        assertEquals("banner@univ.edu", course.getCourseLecturerEmail());
 
 
         assertThrows(IllegalStateException.class, () ->
@@ -109,7 +111,7 @@ public class AdminServiceImplTest {
 
         adminServiceImpl.deleteLecturerByEmail(lecturerRequest.getEmail());
 
-        assertFalse(lecturerRepository.findByEmail(lecturerRequest.getEmail()).isPresent());
+        assertFalse(userRepository.findByEmail(lecturerRequest.getEmail()).isPresent());
 
     }
 

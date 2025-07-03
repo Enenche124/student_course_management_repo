@@ -23,20 +23,19 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        try {
-            return ResponseEntity.ok(authenticationService.register(registerRequest));
-        } catch (Exception e) {
-            throw new RuntimeException("Registration failed: " + e.getMessage());
-        }
+        RegisterResponse response = authenticationService.register(registerRequest);
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.badRequest().body(response);
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        try {
-            return ResponseEntity.ok(authenticationService.login(loginRequest));
-
-        } catch (Exception e) {
-            throw new RuntimeException("Login failed: " + e.getMessage());
-        }
+        LoginResponse response = authenticationService.login(loginRequest);
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.status(401).body(response);
     }
+
 }

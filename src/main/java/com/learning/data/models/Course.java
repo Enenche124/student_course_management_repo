@@ -21,7 +21,7 @@ public class Course {
     private String courseDescription;
 
 //    @NotBlank
-    private String courseInstructorEmail;
+    private String courseLecturerEmail;
 
     // No grades map needed
 }

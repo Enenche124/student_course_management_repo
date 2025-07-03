@@ -1,8 +1,8 @@
 package com.learning.controllers;
 
 import com.learning.data.models.Course;
-import com.learning.data.models.Lecturer;
-import com.learning.data.repositories.LecturerRepository;
+
+
 import com.learning.dtos.requests.AssignGradeRequest;
 import com.learning.dtos.studentsSumary.StudentSummary;
 import com.learning.services.LecturerService;
@@ -14,19 +14,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/v1/lecturer")
 @PreAuthorize("hasRole('LECTURER')")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class LecturerController {
 
     private final LecturerService lecturerService;
-    private final LecturerRepository lecturerRepository;
+
 
     @Autowired
-    public LecturerController(LecturerService lecturerService, LecturerRepository lecturerRepository) {
+    public LecturerController(LecturerService lecturerService) {
         this.lecturerService = lecturerService;
-        this.lecturerRepository = lecturerRepository;
+
     }
 
     @GetMapping("/count")
@@ -63,9 +63,14 @@ public class LecturerController {
         }
     }
 
+
     @GetMapping("/courses")
     public ResponseEntity<List<Course>> viewAllCourses() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("LECTURER EMAIL FROM CONTEXT: " + email);
+        System.out.println("LECTURER EMAIL FROM CONTEXT: " + email);
+        System.out.println("LECTURER EMAIL FROM CONTEXT: " + email);// Debug log
+
         try {
             return ResponseEntity.ok(lecturerService.viewAllCourses(email));
         } catch (Exception e) {
@@ -74,12 +79,12 @@ public class LecturerController {
     }
 
 
+
     @GetMapping("/{email}")
-    public ResponseEntity<Lecturer> getLecturerByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(
-                lecturerRepository.findByEmail(email)
-                        .orElseThrow(() -> new RuntimeException("Lecturer not found"))
-        );
+    public ResponseEntity<?> getLecturerByEmail(@PathVariable String email) {
+        return lecturerService.getLecturerByEmail(email);
     }
+
+
 
 }

@@ -2,10 +2,10 @@ package com.learning.services;
 
 import com.learning.data.models.Course;
 import com.learning.data.models.Grade;
-import com.learning.data.models.Student;
+import com.learning.data.models.User;
 import com.learning.data.repositories.CourseRepository;
 import com.learning.data.repositories.GradeRepository;
-import com.learning.data.repositories.StudentRepository;
+import com.learning.data.repositories.UserRepository;
 import com.learning.dtos.EnrolledCourseWithGrade;
 import com.learning.dtos.studentsSumary.StudentPerformanceDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +19,19 @@ import java.util.stream.Collectors;
 @Service
 public class StudentServiceImpl implements StudentService {
 
-    private final StudentRepository studentRepository;
+
     private final CourseRepository courseRepository;
     private final GradeRepository gradeRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public StudentServiceImpl(StudentRepository studentRepository,
+    public StudentServiceImpl(
                               CourseRepository courseRepository,
-                              GradeRepository gradeRepository) {
-        this.studentRepository = studentRepository;
+                              GradeRepository gradeRepository, UserRepository userRepository) {
+
         this.courseRepository = courseRepository;
         this.gradeRepository = gradeRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -38,7 +40,8 @@ public class StudentServiceImpl implements StudentService {
             throw new IllegalArgumentException("Course code cannot be empty");
         }
 
-        Optional<Student> optionalStudent = studentRepository.findStudentByEmail(studentEmail);
+
+        Optional<User> optionalStudent = userRepository.findByEmail(studentEmail);
         Optional<Course> optionalCourse = courseRepository.findByCourseCode(courseCode);
 
         if (optionalStudent.isEmpty()) {
@@ -48,7 +51,7 @@ public class StudentServiceImpl implements StudentService {
             throw new IllegalArgumentException("Course does not exist");
         }
 
-        Student student = optionalStudent.get();
+        User student = optionalStudent.get();
         Course course = optionalCourse.get();
 
         if (student.getEnrolledCourses().contains(course)) {
@@ -56,12 +59,12 @@ public class StudentServiceImpl implements StudentService {
         }
 
         student.getEnrolledCourses().add(course);
-        studentRepository.save(student);
+        userRepository.save(student);
     }
 
     @Override
     public long count() {
-        return studentRepository.count();
+        return userRepository.count();
     }
 
     @Override
@@ -71,11 +74,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<EnrolledCourseWithGrade> viewEnrolledCourses(String studentEmail) {
-        Optional<Student> optionalStudent = studentRepository.findStudentByEmail(studentEmail);
+        Optional<User> optionalStudent = userRepository.findByEmail(studentEmail);
         if (optionalStudent.isEmpty()) {
             throw new IllegalArgumentException("Student not found");
         }
-        Student student = optionalStudent.get();
+        User student = optionalStudent.get();
         return student.getEnrolledCourses().stream()
                 .map(course -> {
                     String grade = gradeRepository.findByStudentEmailAndCourseCode(studentEmail, course.getCourseCode())
@@ -86,7 +89,7 @@ public class StudentServiceImpl implements StudentService {
                             course.getCourseTitle(),
                             course.getCourseDescription(),
                             grade,
-                            course.getCourseInstructorEmail()
+                            course.getCourseLecturerEmail()
                     );
                 })
                 .collect(Collectors.toList());
@@ -95,7 +98,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentPerformanceDto> getStudentPerformance(String studentEmail) {
-        Student student = studentRepository.findStudentByEmail(studentEmail)
+        User student = userRepository.findByEmail(studentEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
 
         List<StudentPerformanceDto> performanceList = new ArrayList<>();
@@ -120,8 +123,8 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Optional<Student> findStudentByEmail(String email) {
-        return studentRepository.findStudentByEmail(email);
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
 }

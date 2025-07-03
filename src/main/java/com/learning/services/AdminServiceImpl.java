@@ -1,27 +1,32 @@
 package com.learning.services;
 
-import com.learning.data.models.Admin;
-import com.learning.data.models.Course;
-import com.learning.data.models.Lecturer;
+import com.learning.data.models.*;
 import com.learning.data.repositories.CourseRepository;
-import com.learning.data.repositories.LecturerRepository;
+import com.learning.data.repositories.UserRepository;
+import com.learning.dtos.requests.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminServiceImpl implements AdminService {
 
     private final CourseRepository courseRepository;
-    private final LecturerRepository lecturerRepository;
-    private AdminServiceImpl adminServiceImpl;
-
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
     @Autowired
     public AdminServiceImpl(CourseRepository courseRepository,
-                            LecturerRepository lecturerRepository) {
+                             UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.courseRepository = courseRepository;
-        this.lecturerRepository = lecturerRepository;
+
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -49,24 +54,27 @@ public class AdminServiceImpl implements AdminService {
         Course course = courseRepository.findByCourseCode(courseCode)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found"));
 
-        Lecturer lecturer = lecturerRepository.findByEmail(lecturerEmail)
+        User lecturer = userRepository.findByEmail(lecturerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Lecturer not found"));
 
-        if (lecturerEmail.equalsIgnoreCase(course.getCourseInstructorEmail())) {
+        if (lecturerEmail.equalsIgnoreCase(course.getCourseLecturerEmail())) {
             throw new IllegalStateException("This course is already assigned to this lecturer");
         }
 
-        course.setCourseInstructorEmail(lecturer.getEmail());
+        course.setCourseLecturerEmail(lecturer.getEmail());
         courseRepository.save(course);
     }
 
+
+
     @Override
     public List<String> viewAllLecturerEmails() {
-        return lecturerRepository.findAll()
-                .stream()
-                .map(Lecturer::getEmail)
-                .toList();
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRole() == Role.LECTURER)
+                .map(User::getEmail)
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public List<Course> viewAllCourses() {
@@ -75,15 +83,69 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void deleteLecturerByEmail(String email) {
-        Lecturer lecturer = lecturerRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Lecturer not found"));
-        lecturerRepository.delete(lecturer);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Lecturer not found"));
+
+        if (user.getRole() != Role.LECTURER) {
+            throw new RuntimeException("User is not a lecturer");
+        }
+
+        userRepository.delete(user);
     }
+
+
+
+
 
     @Override
     public void deleteCourseByCourseCode(String courseCode) {
         Course course = courseRepository.findByCourseCode(courseCode).orElseThrow(() -> new IllegalArgumentException("Course not found"));
         courseRepository.delete(course);
     }
+
+
+    @Override
+    public ResponseEntity<?> createUser(RegisterRequest request) {
+        String email = request.getEmail().toLowerCase();
+
+        if (request.getRole() == Role.STUDENT) {
+            return ResponseEntity.badRequest().body("Admin cannot create students.");
+        }
+
+        if (!isValidEmail(email)) {
+            return ResponseEntity.badRequest().body("Invalid email format.");
+        }
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            return ResponseEntity.badRequest().body("Email already in use.");
+        }
+
+        User newUser = new User();
+        newUser.setName(request.getName());
+        newUser.setEmail(email);
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        newUser.setRole(request.getRole());
+        newUser.setCreatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+
+        userRepository.save(newUser);
+        return ResponseEntity.ok(request.getRole().name() + " created successfully");
+    }
+
+
+    @Override
+    public ResponseEntity<?> getAdminByEmail(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email).filter(u -> u.getRole() == Role.ADMIN);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Admin not found.");
+        }
+        return ResponseEntity.ok(userOpt.get());
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[a-zA-Z]{2,}$";
+        return email != null && email.matches(emailRegex);
+    }
+
 
 
 }

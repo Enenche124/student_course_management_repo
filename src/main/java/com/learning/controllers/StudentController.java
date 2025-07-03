@@ -1,7 +1,7 @@
 package com.learning.controllers;
 
 import com.learning.data.models.Course;
-import com.learning.data.models.Student;
+import com.learning.data.models.User;
 import com.learning.dtos.EnrolledCourseWithGrade;
 import com.learning.dtos.studentsSumary.StudentPerformanceDto;
 import com.learning.services.StudentService;
@@ -76,8 +76,8 @@ public class StudentController {
     }
 
     @GetMapping("/{email:.+}")
-    public ResponseEntity<Student> getStudentByEmail(@PathVariable String email) {
-        return studentService.findStudentByEmail(email)
+    public ResponseEntity<User> getStudentByEmail(@PathVariable String email) {
+        return studentService.findByEmail(email)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

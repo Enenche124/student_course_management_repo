@@ -1,7 +1,7 @@
 package com.learning.services;
 
 import com.learning.data.models.Course;
-import com.learning.data.models.Student;
+import com.learning.data.models.User;
 import com.learning.dtos.EnrolledCourseWithGrade;
 import com.learning.dtos.studentsSumary.StudentPerformanceDto;
 
@@ -15,5 +15,5 @@ public interface StudentService {
     void enrollForCourse(String studentEmail, String courseCode);
     List<StudentPerformanceDto> getStudentPerformance(String studentEmail);
 
-    Optional<Student> findStudentByEmail(String email);
+    Optional<User> findByEmail(String email);
 }

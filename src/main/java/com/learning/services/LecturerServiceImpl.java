@@ -1,41 +1,36 @@
 package com.learning.services;
 
-import com.learning.data.models.Course;
-import com.learning.data.models.Grade;
-import com.learning.data.models.Student;
-import com.learning.data.repositories.CourseRepository;
-import com.learning.data.repositories.GradeRepository;
-import com.learning.data.repositories.LecturerRepository;
-import com.learning.data.repositories.StudentRepository;
+import com.learning.data.models.*;
+import com.learning.data.repositories.*;
 import com.learning.dtos.studentsSumary.StudentSummary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class LecturerServiceImpl implements LecturerService {
 
-    private final LecturerRepository lecturerRepository;
-    private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
     private final GradeRepository gradeRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public LecturerServiceImpl(LecturerRepository lecturerRepository,
-                               StudentRepository studentRepository,
+    public LecturerServiceImpl(
                                CourseRepository courseRepository,
-                               GradeRepository gradeRepository) {
-        this.lecturerRepository = lecturerRepository;
-        this.studentRepository = studentRepository;
+                               GradeRepository gradeRepository, UserRepository userRepository) {
+
         this.courseRepository = courseRepository;
         this.gradeRepository = gradeRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public long count() {
-        return lecturerRepository.count();
+        return userRepository.count();
     }
 
 
@@ -46,7 +41,7 @@ public class LecturerServiceImpl implements LecturerService {
             throw new IllegalArgumentException("Score must be between 0 and 100");
         }
 
-        Student student = studentRepository.findStudentByEmail(studentEmail)
+        User student = userRepository.findByEmail(studentEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found with email: " + studentEmail));
 
         Course course = courseRepository.findByCourseCode(courseCode)
@@ -84,22 +79,32 @@ public class LecturerServiceImpl implements LecturerService {
 
     @Override
     public List<StudentSummary> viewAllEnrolledStudents(String lecturerEmail) {
-        List<Course> lecturerCourses = courseRepository.findByCourseInstructorEmail(lecturerEmail);
+        List<Course> lecturerCourses = courseRepository.findByCourseLecturerEmailIgnoreCase(lecturerEmail);
         List<String> courseCodes = lecturerCourses.stream()
                 .map(Course::getCourseCode)
                 .toList();
 
-        return studentRepository.findAll().stream()
-                .filter(student -> student.getEnrolledCourses().stream()
-                        .anyMatch(course -> courseCodes.contains(course.getCourseCode())))
+
+        return userRepository.findAll().stream().filter(student -> student.getEnrolledCourses().stream()
+                .anyMatch(course -> courseCodes.contains(course.getCourseCode())))
                 .map(student -> new StudentSummary(student.getName(), student.getEmail()))
                 .collect(Collectors.toList());
     }
 
 
     @Override
-    public List<Course> viewAllCourses(String instructorEmail) {
-        return courseRepository.findByCourseInstructorEmail(instructorEmail);
+    public ResponseEntity<?> getLecturerByEmail(String email) {
+     Optional<User> userOpt = userRepository.findByEmail(email).filter(u -> u.getRole() == Role.LECTURER);
+     if (userOpt.isEmpty()) {
+         return ResponseEntity.status(404).body("Lecturer not found.");
+     }
+     return ResponseEntity.ok(userOpt.get());
+    }
+
+
+    @Override
+    public List<Course> viewAllCourses(String lecturerEmail) {
+        return courseRepository.findByCourseLecturerEmailIgnoreCase(lecturerEmail);
     }
 
 

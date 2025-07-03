@@ -6,8 +6,4 @@ import org.springframework.stereotype.Service;
 public class CourseServiceImpl implements CourseService {
 
 
-//    @Override
-//    public List<Student> viewEnrolledStudents() {
-//        return List.of();
-//    }
 }

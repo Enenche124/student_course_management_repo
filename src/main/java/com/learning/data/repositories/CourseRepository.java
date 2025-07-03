@@ -9,7 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface CourseRepository extends MongoRepository<Course, String> {
-    List<Course> findByCourseInstructorEmail(String courseInstructorEmail);
-    List<Course> findByCourseInstructorEmailIgnoreCase(String courseInstructorEmail);
+    List<Course> findByCourseLecturerEmailIgnoreCase(String courseLecturerEmail);
     Optional<Course> findByCourseCode(String courseCode);
 }

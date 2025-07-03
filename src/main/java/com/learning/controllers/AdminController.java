@@ -1,8 +1,9 @@
 package com.learning.controllers;
 
-import com.learning.data.models.Admin;
-import com.learning.data.repositories.AdminRepository;
+
+import com.learning.data.models.Course;
 import com.learning.dtos.requests.CreateCourseRequest;
+import com.learning.dtos.requests.RegisterRequest;
 import com.learning.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,25 +12,30 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
-    private final AdminRepository adminRepository;
+
 
     @Autowired
-    public AdminController(AdminService adminService, AdminRepository adminRepository) {
+    public AdminController(AdminService adminService) {
         this.adminService = adminService;
-        this.adminRepository = adminRepository;
+
     }
 
 
     @PostMapping("/courses")
     public ResponseEntity<String> createCourse(@RequestBody CreateCourseRequest request) {
-        adminService.createCourse(request.getCourseCode(), request.getTitle(), request.getDescription());
-        return ResponseEntity.ok("Course created successfully.");
+        try {
+            adminService.createCourse(request.getCourseCode(), request.getTitle(), request.getDescription());
+            return ResponseEntity.ok("Course created successfully.");
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to create course: " + e.getMessage());
+        }
     }
 
 
@@ -38,8 +44,13 @@ public class AdminController {
             @PathVariable String courseCode,
             @RequestParam String lecturerEmail) {
 
-        adminService.assignCourseToLecturer(courseCode, lecturerEmail);
-        return ResponseEntity.ok("Course assigned to lecturer successfully.");
+        try {
+            adminService.assignCourseToLecturer(courseCode, lecturerEmail);
+            return ResponseEntity.ok("Course assigned to lecturer successfully.");
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to assign course to lecturer: " + e.getMessage());
+        }
+
     }
 
 
@@ -49,7 +60,7 @@ public class AdminController {
     }
 
     @GetMapping("/courses")
-    public  ResponseEntity<List<com.learning.data.models.Course>> viewAllCourses() {
+    public  ResponseEntity<List<Course>> viewAllCourses() {
         try {
             return ResponseEntity.ok(adminService.viewAllCourses());
         }catch (Exception e) {
@@ -59,24 +70,26 @@ public class AdminController {
 
 
     @GetMapping("/{email}")
-    public ResponseEntity<Admin> getAdminByEmail(@PathVariable String email) {
-        Admin admin = adminRepository.findByEmail(email);
-            try {
-                return ResponseEntity.ok(admin);
-            }catch (Exception e) {
-                throw new RuntimeException("No admin found: " + e.getMessage());
-            }
+    public ResponseEntity<?> getAdminByEmail(@PathVariable String email) {
+        try {
+            return adminService.getAdminByEmail(email);
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to retrieve admin: " + e.getMessage());
+        }
+
     }
+
 
     @DeleteMapping("/delete-lecturer")
     public ResponseEntity<?> deleteLecturerByEmail(@RequestParam String email) {
         try {
             adminService.deleteLecturerByEmail(email);
-            return ResponseEntity.ok("Lecturer deleted successfully.");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete lecturer: " + e.getMessage());
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to delete lecturer: " + e.getMessage());
         }
+        return ResponseEntity.ok("Lecturer deleted successfully.");
     }
+
 
     @DeleteMapping("/delete-course")
     public ResponseEntity<?> deleteCourseByCourseCode(@RequestParam String courseCode) {
@@ -86,5 +99,16 @@ public class AdminController {
         }catch (Exception e) {
             throw new RuntimeException("Failed to delete course: " + e.getMessage());
         }
+    }
+
+
+    @PostMapping("/create-user")
+    public ResponseEntity<?> createUser(@RequestBody RegisterRequest request) {
+        try {
+            return adminService.createUser(request);
+        }catch (Exception e) {
+            throw new RuntimeException("Failed to create user: " + e.getMessage());
+        }
+
     }
 }
